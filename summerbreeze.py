@@ -158,7 +158,8 @@ def main():
     st.set_page_config(
         page_title="Summer Breeze 2025",
         page_icon=":guitar:",
-        layout=None,
+        layout="centered",
+        initial_sidebar_state="collapsed",
     )
 
     # Fetch and clean the data
