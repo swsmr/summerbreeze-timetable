@@ -70,7 +70,7 @@ def main():
     if only_upcoming:
         df = df[df["Endtime"] > pd.Timestamp.now()]
     selected_day = st.pills(
-        "Select Day",
+        "Select day",
         np.sort(df["Day"].unique()),
         default=np.sort(df["Day"].unique())[0],
     )
