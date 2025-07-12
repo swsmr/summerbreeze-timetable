@@ -1,0 +1,14 @@
+[project]
+name = "summerbreeze-timetable"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "altair[all]>=5.5.0",
+    "lxml>=6.0.0",
+    "numpy>=2.3.1",
+    "pandas>=2.3.1",
+    "plotly>=6.2.0",
+    "streamlit>=1.46.1",
+]
