@@ -158,7 +158,7 @@ def main():
     st.set_page_config(
         page_title="Summer Breeze 2025",
         page_icon=":guitar:",
-        layout="wide",
+        layout=None,
     )
 
     # Fetch and clean the data
