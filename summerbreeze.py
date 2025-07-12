@@ -167,7 +167,7 @@ def main():
     # )
 
     st.header("Links")
-    df = df.sort_values("Starttime")
+    df = df.sort_values(["Stage", "Starttime"])
     cols = st.columns(len(df["Stage"].unique()))
     for i, stage in enumerate(df["Stage"].unique()):
         cols[i].write(f"**{stage}**")
