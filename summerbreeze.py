@@ -60,61 +60,30 @@ def fetch_data(extract_links="body"):
     return df
 
 
-def main():
-    st.set_page_config(
-        page_title="Summer Breeze 2025",
-        page_icon=":guitar:",
-    )
-    st.title("Summer Breeze 2025")
-    df = fetch_data()
+def show_links_to_band_info(df):
+    df = df.sort_values(["Stage", "Starttime"])
+    cols = st.columns(len(df["Stage"].unique()))
+    for i, stage in enumerate(df["Stage"].unique()):
+        cols[i].write(f"**{stage}**")
+    for i, stage in enumerate(df["Stage"].unique()):
+        with cols[i]:
+            stage_df = df[df["Stage"] == stage]
+            for _, row in stage_df.iterrows():
+                st.markdown(f"{row['Time']} [{row['Band']}]({row['Link']})")
 
-    only_upcoming = st.toggle("Show only upcoming bands")
-    if only_upcoming:
-        df = df[df["Endtime"] > pd.Timestamp.now()]
-    selected_day = st.pills(
-        "Select day",
-        np.sort(df["Day"].unique()),
-        default=np.sort(df["Day"].unique())[0],
-        format_func=lambda x: f"{pd.to_datetime(x, format='%d.%m.%Y').day_name()[:3]} {pd.to_datetime(x, format='%d.%m.%Y').strftime('%d.')}",
-    )
-    df = df[df["Day"] == selected_day]
 
-    # Timetable
-    st.header("Timetable")
-
-    # Plotly express
-    # import plotly.express as px
-    # fig = px.timeline(
-    #     df,
-    #     x_start="Starttime",
-    #     x_end="Endtime",
-    #     text="Band",
-    #     y="Stage",
-    #     color="Stage",
-    # )
-    # fig.update_layout(showlegend=False)
-    # fig.update_layout(margin={"t": 20, "r": 20})
-    # fig.update_layout(yaxis_title=None)
-    # fig.update_yaxes(tickangle=-75)
-    # fig.update_xaxes(showgrid=True)
-    # fig.update_traces(textangle=-90, textposition="inside")
-    # # fig.show()
-    # # fig.show("browser")
-    # st.plotly_chart(fig)
-
-    # Altair
+def create_timetable(df, title=None):
     fig_bar = (
-        alt.Chart(df, height=800)
+        alt.Chart(df, height=800, title=title)
         .mark_bar()
         .encode(
             y=alt.Y("Starttime", scale=alt.Scale(reverse=True)),
             y2="Endtime",
-            x=alt.X("Stage", axis=alt.Axis(orient="top")),
+            x=alt.X("Stage", axis=alt.Axis(orient="top", title=None, labelAngle=30)),
             color=alt.Color("Stage", legend=None),
             href="Link",
         )
     )
-    # fig_bar["usermeta"] = {"embedOptions": {"loader": {"target": "_blank"}}} # Not working...
     fig_band_text = (
         alt.Chart(df)
         .mark_text(dy=-5)
@@ -134,49 +103,76 @@ def main():
         )
     )
     fig = fig_bar + fig_band_text + fig_time_text
-    st.altair_chart(fig, theme=None)
+    now = pd.Timestamp.now()
+    if now >= df["Starttime"].min() and now <= df["Endtime"].max():
+        fig_now = (
+            alt.Chart(pd.DataFrame({"y": [now]}))
+            .mark_rule(color="gray", strokeDash=[4, 4])
+            .encode(y="y")
+        )
+        fig += fig_now
+    return fig
 
-    # Altair with selection (not working on mobile)
-    # point_selector = alt.selection_point("point_selection")
-    # fig_bar = (
-    #     alt.Chart(df, height=800)
-    #     .mark_bar()
-    #     .encode(
-    #         y=alt.Y("Starttime", scale=alt.Scale(reverse=True)),
-    #         y2="Endtime",
-    #         x=alt.X("Stage", axis=alt.Axis(orient="top", labelAlign="left")),
-    #         color=alt.Color("Stage", legend=None),
-    #     )
-    # ).add_params(point_selector)
-    # event = st.altair_chart(fig_bar, theme=None, on_select="rerun")
-    # st.write(event)
 
-    # Displaying links as they don't work in Altair on mobile somehow
-    # df["Link"] += "#" + df["Band"]
-    # st.write(df)
-    # st.dataframe(
-    #     df[["Stage", "Time", "Band", "Link"]].pivot_table(
-    #         index="Time",
-    #         columns="Stage",
-    #         values="Link",
-    #         aggfunc="max",
-    #     ),
-    #     column_config={
-    #         stage: st.column_config.LinkColumn(stage, display_text="https://.+?#(.+)")
-    #         for stage in df["Stage"].unique()
-    #     },
-    # )
+def all_timetables_page():
+    df = st.session_state.df
+    df = df.sort_values("Day")
+    for i, day in enumerate(df["Day"].unique()):
+        day_df = df[df["Day"] == day]
+        fig = create_timetable(day_df, title=day_formatter(day))
+        st.altair_chart(fig, theme=None)
 
-    st.header("Links")
-    df = df.sort_values(["Stage", "Starttime"])
-    cols = st.columns(len(df["Stage"].unique()))
-    for i, stage in enumerate(df["Stage"].unique()):
-        cols[i].write(f"**{stage}**")
-    for i, stage in enumerate(df["Stage"].unique()):
-        with cols[i]:
-            stage_df = df[df["Stage"] == stage]
-            for _, row in stage_df.iterrows():
-                st.markdown(f"{row['Time']} [{row['Band']}]({row['Link']})")
+
+def day_formatter(day):
+    return f"{pd.to_datetime(day, format='%d.%m.%Y').day_name()[:3]} {pd.to_datetime(day, format='%d.%m.%Y').strftime('%d.')}"
+
+
+def interactive_timetable():
+    st.title("Summer Breeze 2025")
+    df = st.session_state.df
+
+    # Filter the data
+    only_upcoming = st.toggle("Show only upcoming bands")
+    if only_upcoming:
+        df = df[df["Endtime"] > pd.Timestamp.now()]
+    selected_day = st.pills(
+        "Select day",
+        np.sort(df["Day"].unique()),
+        default=np.sort(df["Day"].unique())[0],
+        format_func=day_formatter,
+    )
+    df = df[df["Day"] == selected_day]
+
+    tabs = st.tabs(["Timetable", "Bands"])
+
+    with tabs[0]:
+        fig = create_timetable(df, title="")  # day_formatter(selected_day)
+        st.altair_chart(fig, theme=None)
+
+    with tabs[1]:
+        show_links_to_band_info(df)
+
+
+def main():
+    # Streamlit set up
+    st.set_page_config(
+        page_title="Summer Breeze 2025",
+        page_icon=":guitar:",
+        layout="wide",
+    )
+
+    # Fetch and clean the data
+    st.session_state.df = fetch_data()
+
+    # Page navigation
+    pg = st.navigation(
+        [
+            st.Page(interactive_timetable, title="Home"),
+            st.Page(all_timetables_page, title="All timetables"),
+        ],
+        position="top",
+    )
+    pg.run()
 
 
 if __name__ == "__main__":
