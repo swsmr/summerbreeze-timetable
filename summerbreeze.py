@@ -68,7 +68,7 @@ def main():
     st.title("Summer Breeze 2025")
     df = fetch_data()
     
-    only_upcoming = st.toggle("Only show upcoming bands")
+    only_upcoming = st.toggle("Show only upcoming bands")
     if only_upcoming:
         df = df[df["Endtime"] > pd.Timestamp.now()]
     selected_day = st.pills(
