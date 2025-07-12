@@ -153,6 +153,14 @@ def interactive_timetable():
         show_links_to_band_info(df)
 
 
+def when_plays_who():
+    df = st.session_state.df
+    bands = np.sort(df["Band"].unique())
+    selected_band = st.selectbox("Select band", bands)
+    band_df = df[df["Band"] == selected_band]
+    st.markdown(f"{day_formatter(band_df['Day'].iloc[0])}, {band_df['Time'].iloc[0]} | {band_df['Stage'].iloc[0]} | [Link]({band_df['Link'].iloc[0]})")
+
+
 def main():
     # Streamlit set up
     st.set_page_config(
@@ -168,10 +176,11 @@ def main():
     # Page navigation
     pg = st.navigation(
         [
-            st.Page(interactive_timetable, title="Home"),
-            st.Page(all_timetables_page, title="All timetables"),
+            st.Page(interactive_timetable, title="Home", icon=":material/dashboard:"),
+            st.Page(all_timetables_page, title="All timetables", icon=":material/calendar_clock:"),
+            st.Page(when_plays_who, title="Bands", icon=":material/artist:"),
         ],
-        position="top",
+        position="top", 
     )
     pg.run()
 
