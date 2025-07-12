@@ -65,6 +65,7 @@ def main():
         page_title="Summer Breeze 2025 - Timetable",
         page_icon=":guitar:",
     )
+    st.title("Summer Breeze 2025 - Timetable")
     df = fetch_data()
     only_upcoming = st.toggle("Only show upcoming bands")
     if only_upcoming:
