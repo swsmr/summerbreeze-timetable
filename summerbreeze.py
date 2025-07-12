@@ -75,6 +75,7 @@ def main():
         "Select day",
         np.sort(df["Day"].unique()),
         default=np.sort(df["Day"].unique())[0],
+        format_func=lambda x: f"{pd.to_datetime(x, format='%d.%m.%Y').day_name()[:3]} {pd.to_datetime(x, format='%d.%m.%Y').strftime('%d.')}",
     )
     df = df[df["Day"] == selected_day]
 
