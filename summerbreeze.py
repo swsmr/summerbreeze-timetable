@@ -67,7 +67,7 @@ def main():
     )
     st.title("Summer Breeze 2025")
     df = fetch_data()
-    
+
     only_upcoming = st.toggle("Show only upcoming bands")
     if only_upcoming:
         df = df[df["Endtime"] > pd.Timestamp.now()]
@@ -175,9 +175,7 @@ def main():
         with cols[i]:
             stage_df = df[df["Stage"] == stage]
             for _, row in stage_df.iterrows():
-                st.markdown(
-                    f"{row['Time']} [{row['Band']}]({row['Link']})"
-                )
+                st.markdown(f"{row['Time']} [{row['Band']}]({row['Link']})")
 
 
 if __name__ == "__main__":
