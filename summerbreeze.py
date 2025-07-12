@@ -62,11 +62,12 @@ def fetch_data(extract_links="body"):
 
 def main():
     st.set_page_config(
-        page_title="Summer Breeze 2025 - Timetable",
+        page_title="Summer Breeze 2025",
         page_icon=":guitar:",
     )
-    st.title("Summer Breeze 2025 - Timetable")
+    st.title("Summer Breeze 2025")
     df = fetch_data()
+    
     only_upcoming = st.toggle("Only show upcoming bands")
     if only_upcoming:
         df = df[df["Endtime"] > pd.Timestamp.now()]
@@ -76,6 +77,9 @@ def main():
         default=np.sort(df["Day"].unique())[0],
     )
     df = df[df["Day"] == selected_day]
+
+    # Timetable
+    st.header("Timetable")
 
     # Plotly express
     # import plotly.express as px
@@ -145,6 +149,35 @@ def main():
     # ).add_params(point_selector)
     # event = st.altair_chart(fig_bar, theme=None, on_select="rerun")
     # st.write(event)
+
+    # Displaying links as they don't work in Altair on mobile somehow
+    # df["Link"] += "#" + df["Band"]
+    # st.write(df)
+    # st.dataframe(
+    #     df[["Stage", "Time", "Band", "Link"]].pivot_table(
+    #         index="Time",
+    #         columns="Stage",
+    #         values="Link",
+    #         aggfunc="max",
+    #     ),
+    #     column_config={
+    #         stage: st.column_config.LinkColumn(stage, display_text="https://.+?#(.+)")
+    #         for stage in df["Stage"].unique()
+    #     },
+    # )
+
+    st.header("Links")
+    df = df.sort_values("Starttime")
+    cols = st.columns(len(df["Stage"].unique()))
+    for i, stage in enumerate(df["Stage"].unique()):
+        cols[i].write(f"**{stage}**")
+    for i, stage in enumerate(df["Stage"].unique()):
+        with cols[i]:
+            stage_df = df[df["Stage"] == stage]
+            for _, row in stage_df.iterrows():
+                st.markdown(
+                    f"{row['Time']} [{row['Band']}]({row['Link']})"
+                )
 
 
 if __name__ == "__main__":
