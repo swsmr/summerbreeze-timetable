@@ -134,7 +134,7 @@ def interactive_timetable():
     # Filter the data
     only_upcoming = st.toggle("Show only upcoming bands")
     if only_upcoming:
-        df = df[df["Endtime"] > pd.Datetime.now() + pd.Timedelta(2, "hours")
+        df = df[df["Endtime"]] > (pd.Datetime.now() + pd.Timedelta(2, "hours"))
     selected_day = st.pills(
         "Select day",
         np.sort(df["Day"].unique()),
