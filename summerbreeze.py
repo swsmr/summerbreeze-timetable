@@ -1,4 +1,4 @@
-from datetime import time, datetime
+from datetime import time
 
 import altair as alt
 import numpy as np
@@ -103,7 +103,7 @@ def create_timetable(df, title=None):
         )
     )
     fig = fig_bar + fig_band_text + fig_time_text
-    now = datetime.now()
+    now = pd.Datetime.now() + pd.Timedelta(2, "hours")
     if now >= df["Starttime"].min() and now <= df["Endtime"].max():
         fig_now = (
             alt.Chart(pd.DataFrame({"y": [now]}))
@@ -134,7 +134,7 @@ def interactive_timetable():
     # Filter the data
     only_upcoming = st.toggle("Show only upcoming bands")
     if only_upcoming:
-        df = df[df["Endtime"] > datetime.now()
+        df = df[df["Endtime"] > pd.Datetime.now() + pd.Timedelta(2, "hours")
     selected_day = st.pills(
         "Select day",
         np.sort(df["Day"].unique()),
