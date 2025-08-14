@@ -103,7 +103,7 @@ def create_timetable(df, title=None):
         )
     )
     fig = fig_bar + fig_band_text + fig_time_text
-    now = pd.Timestamp.now()
+    now = pd.Timestamp.now(tz="Europe/Berlin")
     if now >= df["Starttime"].min() and now <= df["Endtime"].max():
         fig_now = (
             alt.Chart(pd.DataFrame({"y": [now]}))
@@ -134,7 +134,7 @@ def interactive_timetable():
     # Filter the data
     only_upcoming = st.toggle("Show only upcoming bands")
     if only_upcoming:
-        df = df[df["Endtime"] > pd.Timestamp.now()]
+        df = df[df["Endtime"] > pd.Timestamp.now(tz="Europe/Berlin")]
     selected_day = st.pills(
         "Select day",
         np.sort(df["Day"].unique()),
